@@ -20,10 +20,12 @@
 - 다크 모드 최적화
 
 ### 🔐 인증 시스템
+- Supabase를 활용한 실제 인증 로직
 - 이메일 로그인/회원가입
-- Google 소셜 로그인
-- Kakao 소셜 로그인
+- Google 소셜 로그인 (준비 중)
+- Kakao 소셜 로그인 (준비 중)
 - 부드러운 모드 전환 애니메이션
+- 사용자 닉네임을 User Metadata에 저장
 
 ## 🛠 기술 스택
 
@@ -32,16 +34,38 @@
 - **Styling**: Tailwind CSS v4
 - **Animation**: Framer Motion
 - **Effects**: canvas-confetti
+- **Backend**: Supabase (인증 및 데이터베이스)
 
 ## 🚀 시작하기
 
-### 설치
+### 1. Supabase 프로젝트 설정
+
+1. [Supabase](https://supabase.com)에 가입하고 새 프로젝트를 생성합니다.
+2. 프로젝트 설정에서 **API Settings**로 이동합니다.
+3. **Project URL**과 **anon public** 키를 복사합니다.
+
+### 2. 환경 변수 설정
+
+프로젝트 루트에 `.env.local` 파일을 생성하고 다음 내용을 추가합니다:
+
+```bash
+cp .env.local.example .env.local
+```
+
+`.env.local` 파일을 열어 실제 Supabase 값으로 수정합니다:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 3. 설치
 
 ```bash
 npm install
 ```
 
-### 개발 서버 실행
+### 4. 개발 서버 실행
 
 ```bash
 cd my-project
@@ -75,7 +99,8 @@ my-project/
 │   │       ├── ProbabilityChart.tsx  # 확률 차트
 │   │       └── ResultOverlay.tsx     # 결과 오버레이
 │   ├── lib/
-│   │   └── calculations.ts           # 확률 계산 로직
+│   │   ├── calculations.ts           # 확률 계산 로직
+│   │   └── supabase.ts               # Supabase 클라이언트
 │   └── types/
 │       └── decision.ts               # TypeScript 타입 정의
 └── public/              # 정적 파일

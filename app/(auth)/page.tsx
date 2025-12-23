@@ -3,10 +3,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 
 /**
  * 영만이의 뽑기 도사 - 초고퀄리티 로그인/회원가입 페이지
- * Hydration 에러 수정 및 성능 최적화
+ * Supabase 실제 인증 로직 구현
  */
 export default function AuthPage() {
   const router = useRouter();
@@ -17,6 +18,8 @@ export default function AuthPage() {
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [username, setUsername] = useState('');
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // 마운트 상태 관리 (Hydration 에러 방지)
   useEffect(() => {
@@ -24,24 +27,77 @@ export default function AuthPage() {
   }, []);
   
   // 로그인 핸들러
-  const handleEmailLogin = (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('로그인 요청:', { email, password });
-    router.push('/dashboard');
+    setError(null);
+    setLoading(true);
+    
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (signInError) {
+        throw signInError;
+      }
+      
+      if (data.user) {
+        router.push('/dashboard');
+      }
+    } catch (err: any) {
+      setError(err.message || '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
+    } finally {
+      setLoading(false);
+    }
   };
   
   // 회원가입 핸들러
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     
     if (password !== passwordConfirm) {
-      alert('비밀번호가 일치하지 않습니다.');
+      setError('비밀번호가 일치하지 않습니다.');
       return;
     }
     
-    console.log('회원가입 요청:', { email, password, username });
-    alert('회원가입 요청이 전송되었습니다');
-    router.push('/dashboard');
+    if (password.length < 6) {
+      setError('비밀번호는 최소 6자 이상이어야 합니다.');
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username: username, // User Metadata에 닉네임 저장
+          },
+        },
+      });
+      
+      if (signUpError) {
+        throw signUpError;
+      }
+      
+      if (data.user) {
+        alert('회원가입이 완료되었습니다! 이메일을 확인하여 인증을 완료해주세요.');
+        // 회원가입 성공 시 로그인 모드로 전환
+        setIsLogin(true);
+        setEmail('');
+        setPassword('');
+        setPasswordConfirm('');
+        setUsername('');
+      }
+    } catch (err: any) {
+      setError(err.message || '회원가입에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setLoading(false);
+    }
   };
   
   // 소셜 로그인 핸들러
@@ -293,6 +349,18 @@ export default function AuthPage() {
               </button>
             </div>
             
+            {/* 에러 메시지 */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-200 text-sm"
+              >
+                {error}
+              </motion.div>
+            )}
+            
             <AnimatePresence mode="wait">
               {isLogin ? (
                 /* 로그인 폼 */
@@ -356,11 +424,12 @@ export default function AuthPage() {
                   {/* 로그인 버튼 */}
                   <motion.button
                     type="submit"
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full py-4 px-6 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-bold rounded-2xl shadow-[0_0_30px_rgba(250,204,21,0.4)] hover:shadow-[0_0_40px_rgba(250,204,21,0.6)] transition-all duration-300 mt-8"
+                    disabled={loading}
+                    whileHover={!loading ? { scale: 1.02, y: -2 } : {}}
+                    whileTap={!loading ? { scale: 0.98 } : {}}
+                    className="w-full py-4 px-6 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-bold rounded-2xl shadow-[0_0_30px_rgba(250,204,21,0.4)] hover:shadow-[0_0_40px_rgba(250,204,21,0.6)] transition-all duration-300 mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    로그인
+                    {loading ? '처리 중...' : '로그인'}
                   </motion.button>
                 </motion.form>
               ) : (
@@ -481,14 +550,15 @@ export default function AuthPage() {
                   {/* 가입하기 버튼 */}
                   <motion.button
                     type="submit"
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
+                    disabled={loading}
+                    whileHover={!loading ? { scale: 1.02, y: -2 } : {}}
+                    whileTap={!loading ? { scale: 0.98 } : {}}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="w-full py-4 px-6 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-bold rounded-2xl shadow-[0_0_30px_rgba(250,204,21,0.4)] hover:shadow-[0_0_40px_rgba(250,204,21,0.6)] transition-all duration-300 mt-8"
+                    className="w-full py-4 px-6 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-bold rounded-2xl shadow-[0_0_30px_rgba(250,204,21,0.4)] hover:shadow-[0_0_40px_rgba(250,204,21,0.6)] transition-all duration-300 mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    가입하기
+                    {loading ? '처리 중...' : '가입하기'}
                   </motion.button>
                 </motion.form>
               )}
