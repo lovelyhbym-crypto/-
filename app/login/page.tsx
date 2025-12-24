@@ -20,28 +20,28 @@ export default function AuthPage() {
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // 마운트 상태 관리 (Hydration 에러 방지)
   useEffect(() => {
     setMounted(true);
   }, []);
-  
+
   // 로그인 핸들러
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    
+
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      
+
       if (signInError) {
         throw signInError;
       }
-      
+
       if (data.user) {
         router.push('/dashboard');
       }
@@ -51,24 +51,24 @@ export default function AuthPage() {
       setLoading(false);
     }
   };
-  
+
   // 회원가입 핸들러
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
+
     if (password !== passwordConfirm) {
       setError('비밀번호가 일치하지 않습니다.');
       return;
     }
-    
+
     if (password.length < 6) {
       setError('비밀번호는 최소 6자 이상이어야 합니다.');
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -79,11 +79,11 @@ export default function AuthPage() {
           },
         },
       });
-      
+
       if (signUpError) {
         throw signUpError;
       }
-      
+
       if (data.user) {
         alert('회원가입이 완료되었습니다! 이메일을 확인하여 인증을 완료해주세요.');
         // 회원가입 성공 시 로그인 모드로 전환
@@ -99,18 +99,46 @@ export default function AuthPage() {
       setLoading(false);
     }
   };
-  
+
   // 소셜 로그인 핸들러
-  const handleGoogleLogin = () => {
-    router.push('/dashboard');
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          queryParams: {
+            prompt: 'select_account',
+          },
+          redirectTo: `${window.location.origin}/login/callback`,
+        },
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      console.error('Google login error:', error);
+      alert('Google 로그인 중 오류가 발생했습니다.');
+    }
   };
-  
-  const handleKakaoLogin = () => {
-    router.push('/dashboard');
+
+  const handleKakaoLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'kakao',
+        options: {
+          queryParams: {
+            prompt: 'login',
+          },
+          redirectTo: `${window.location.origin}/login/callback`,
+        },
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      console.error('Kakao login error:', error);
+      alert('Kakao 로그인 중 오류가 발생했습니다.');
+    }
   };
-  
+
   // 별무리 효과 (useMemo로 최적화, 개수 감소)
-  const stars = useMemo(() => 
+  const stars = useMemo(() =>
     Array.from({ length: 40 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
@@ -120,7 +148,7 @@ export default function AuthPage() {
       delay: Math.random() * 3,
     })), []
   );
-  
+
   // 시차 애니메이션 설정
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -132,7 +160,7 @@ export default function AuthPage() {
       },
     },
   };
-  
+
   const itemVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
@@ -144,7 +172,7 @@ export default function AuthPage() {
       },
     },
   };
-  
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#0a0a0f] via-[#1a1a2e] to-[#16213e]">
       {/* 운명의 수레바퀴 배경 효과 */}
@@ -181,7 +209,7 @@ export default function AuthPage() {
               }}
             />
           ))}
-          
+
           {/* 수레바퀴 스포크 */}
           {[...Array(12)].map((_, i) => (
             <div
@@ -194,7 +222,7 @@ export default function AuthPage() {
           ))}
         </motion.div>
       </div>
-      
+
       {/* 별무리 효과 (마운트 후에만 렌더링) */}
       {mounted && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -223,7 +251,7 @@ export default function AuthPage() {
           ))}
         </div>
       )}
-      
+
       {/* 신비로운 오라 효과 */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.div
@@ -256,7 +284,7 @@ export default function AuthPage() {
           }}
         />
       </div>
-      
+
       {/* 메인 컨텐츠 */}
       <motion.div
         className="relative z-10 flex min-h-screen items-center justify-center p-4"
@@ -282,7 +310,7 @@ export default function AuthPage() {
             >
               🔮
             </motion.div>
-            
+
             {/* 세리프 스타일 타이틀 */}
             <h1 className="text-5xl md:text-6xl font-black mb-4 tracking-wider" style={{ fontFamily: 'Georgia, serif' }}>
               <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-200 drop-shadow-[0_0_20px_rgba(250,204,21,0.5)]">
@@ -293,7 +321,7 @@ export default function AuthPage() {
                 뽑기 도사
               </span>
             </h1>
-            
+
             <motion.p
               className="text-lg text-yellow-200/70 font-light tracking-wide"
               animate={{
@@ -308,7 +336,7 @@ export default function AuthPage() {
               운명을 결정하는 가장 명쾌한 방법
             </motion.p>
           </motion.div>
-          
+
           {/* 로그인/회원가입 카드 */}
           <motion.div
             variants={itemVariants}
@@ -316,7 +344,7 @@ export default function AuthPage() {
           >
             {/* 카드 내부 빛나는 효과 */}
             <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 via-transparent to-purple-500/5 pointer-events-none" />
-            
+
             {/* 모드 전환 탭 */}
             <div className="relative flex gap-2 mb-8 p-1.5 bg-black/20 backdrop-blur-sm rounded-2xl border border-white/10">
               <motion.div
@@ -333,22 +361,20 @@ export default function AuthPage() {
               />
               <button
                 onClick={() => setIsLogin(true)}
-                className={`relative z-10 flex-1 py-3 px-6 rounded-xl font-bold transition-colors ${
-                  isLogin ? 'text-black' : 'text-yellow-200/60 hover:text-yellow-200'
-                }`}
+                className={`relative z-10 flex-1 py-3 px-6 rounded-xl font-bold transition-colors ${isLogin ? 'text-black' : 'text-yellow-200/60 hover:text-yellow-200'
+                  }`}
               >
                 로그인
               </button>
               <button
                 onClick={() => setIsLogin(false)}
-                className={`relative z-10 flex-1 py-3 px-6 rounded-xl font-bold transition-colors ${
-                  !isLogin ? 'text-black' : 'text-yellow-200/60 hover:text-yellow-200'
-                }`}
+                className={`relative z-10 flex-1 py-3 px-6 rounded-xl font-bold transition-colors ${!isLogin ? 'text-black' : 'text-yellow-200/60 hover:text-yellow-200'
+                  }`}
               >
                 회원가입
               </button>
             </div>
-            
+
             {/* 에러 메시지 */}
             {error && (
               <motion.div
@@ -360,7 +386,7 @@ export default function AuthPage() {
                 {error}
               </motion.div>
             )}
-            
+
             <AnimatePresence mode="wait">
               {isLogin ? (
                 /* 로그인 폼 */
@@ -387,16 +413,15 @@ export default function AuthPage() {
                         onFocus={() => setFocusedField('email')}
                         onBlur={() => setFocusedField(null)}
                         placeholder="your@email.com"
-                        className={`w-full px-5 py-4 bg-black/30 backdrop-blur-sm border-2 rounded-2xl text-white placeholder-white/30 focus:outline-none transition-all duration-300 ${
-                          focusedField === 'email'
-                            ? 'border-yellow-500 shadow-[0_0_30px_rgba(250,204,21,0.3)]'
-                            : 'border-white/10 hover:border-white/20'
-                        }`}
+                        className={`w-full px-5 py-4 bg-black/30 backdrop-blur-sm border-2 rounded-2xl text-white placeholder-white/30 focus:outline-none transition-all duration-300 ${focusedField === 'email'
+                          ? 'border-yellow-500 shadow-[0_0_30px_rgba(250,204,21,0.3)]'
+                          : 'border-white/10 hover:border-white/20'
+                          }`}
                         required
                       />
                     </div>
                   </div>
-                  
+
                   {/* 비밀번호 입력 */}
                   <div>
                     <label htmlFor="password" className="block text-sm font-semibold text-yellow-200/90 mb-2 tracking-wide">
@@ -411,16 +436,15 @@ export default function AuthPage() {
                         onFocus={() => setFocusedField('password')}
                         onBlur={() => setFocusedField(null)}
                         placeholder="••••••••"
-                        className={`w-full px-5 py-4 bg-black/30 backdrop-blur-sm border-2 rounded-2xl text-white placeholder-white/30 focus:outline-none transition-all duration-300 ${
-                          focusedField === 'password'
-                            ? 'border-yellow-500 shadow-[0_0_30px_rgba(250,204,21,0.3)]'
-                            : 'border-white/10 hover:border-white/20'
-                        }`}
+                        className={`w-full px-5 py-4 bg-black/30 backdrop-blur-sm border-2 rounded-2xl text-white placeholder-white/30 focus:outline-none transition-all duration-300 ${focusedField === 'password'
+                          ? 'border-yellow-500 shadow-[0_0_30px_rgba(250,204,21,0.3)]'
+                          : 'border-white/10 hover:border-white/20'
+                          }`}
                         required
                       />
                     </div>
                   </div>
-                  
+
                   {/* 로그인 버튼 */}
                   <motion.button
                     type="submit"
@@ -460,15 +484,14 @@ export default function AuthPage() {
                       onFocus={() => setFocusedField('username')}
                       onBlur={() => setFocusedField(null)}
                       placeholder="영만이"
-                      className={`w-full px-5 py-4 bg-black/30 backdrop-blur-sm border-2 rounded-2xl text-white placeholder-white/30 focus:outline-none transition-all duration-300 ${
-                        focusedField === 'username'
-                          ? 'border-yellow-500 shadow-[0_0_30px_rgba(250,204,21,0.3)]'
-                          : 'border-white/10 hover:border-white/20'
-                      }`}
+                      className={`w-full px-5 py-4 bg-black/30 backdrop-blur-sm border-2 rounded-2xl text-white placeholder-white/30 focus:outline-none transition-all duration-300 ${focusedField === 'username'
+                        ? 'border-yellow-500 shadow-[0_0_30px_rgba(250,204,21,0.3)]'
+                        : 'border-white/10 hover:border-white/20'
+                        }`}
                       required
                     />
                   </motion.div>
-                  
+
                   {/* 이메일 */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
@@ -486,15 +509,14 @@ export default function AuthPage() {
                       onFocus={() => setFocusedField('signup-email')}
                       onBlur={() => setFocusedField(null)}
                       placeholder="your@email.com"
-                      className={`w-full px-5 py-4 bg-black/30 backdrop-blur-sm border-2 rounded-2xl text-white placeholder-white/30 focus:outline-none transition-all duration-300 ${
-                        focusedField === 'signup-email'
-                          ? 'border-yellow-500 shadow-[0_0_30px_rgba(250,204,21,0.3)]'
-                          : 'border-white/10 hover:border-white/20'
-                      }`}
+                      className={`w-full px-5 py-4 bg-black/30 backdrop-blur-sm border-2 rounded-2xl text-white placeholder-white/30 focus:outline-none transition-all duration-300 ${focusedField === 'signup-email'
+                        ? 'border-yellow-500 shadow-[0_0_30px_rgba(250,204,21,0.3)]'
+                        : 'border-white/10 hover:border-white/20'
+                        }`}
                       required
                     />
                   </motion.div>
-                  
+
                   {/* 비밀번호 */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
@@ -512,15 +534,14 @@ export default function AuthPage() {
                       onFocus={() => setFocusedField('signup-password')}
                       onBlur={() => setFocusedField(null)}
                       placeholder="••••••••"
-                      className={`w-full px-5 py-4 bg-black/30 backdrop-blur-sm border-2 rounded-2xl text-white placeholder-white/30 focus:outline-none transition-all duration-300 ${
-                        focusedField === 'signup-password'
-                          ? 'border-yellow-500 shadow-[0_0_30px_rgba(250,204,21,0.3)]'
-                          : 'border-white/10 hover:border-white/20'
-                      }`}
+                      className={`w-full px-5 py-4 bg-black/30 backdrop-blur-sm border-2 rounded-2xl text-white placeholder-white/30 focus:outline-none transition-all duration-300 ${focusedField === 'signup-password'
+                        ? 'border-yellow-500 shadow-[0_0_30px_rgba(250,204,21,0.3)]'
+                        : 'border-white/10 hover:border-white/20'
+                        }`}
                       required
                     />
                   </motion.div>
-                  
+
                   {/* 비밀번호 확인 */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
@@ -538,15 +559,14 @@ export default function AuthPage() {
                       onFocus={() => setFocusedField('password-confirm')}
                       onBlur={() => setFocusedField(null)}
                       placeholder="••••••••"
-                      className={`w-full px-5 py-4 bg-black/30 backdrop-blur-sm border-2 rounded-2xl text-white placeholder-white/30 focus:outline-none transition-all duration-300 ${
-                        focusedField === 'password-confirm'
-                          ? 'border-yellow-500 shadow-[0_0_30px_rgba(250,204,21,0.3)]'
-                          : 'border-white/10 hover:border-white/20'
-                      }`}
+                      className={`w-full px-5 py-4 bg-black/30 backdrop-blur-sm border-2 rounded-2xl text-white placeholder-white/30 focus:outline-none transition-all duration-300 ${focusedField === 'password-confirm'
+                        ? 'border-yellow-500 shadow-[0_0_30px_rgba(250,204,21,0.3)]'
+                        : 'border-white/10 hover:border-white/20'
+                        }`}
                       required
                     />
                   </motion.div>
-                  
+
                   {/* 가입하기 버튼 */}
                   <motion.button
                     type="submit"
@@ -563,7 +583,7 @@ export default function AuthPage() {
                 </motion.form>
               )}
             </AnimatePresence>
-            
+
             {/* 구분선 */}
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
@@ -575,14 +595,14 @@ export default function AuthPage() {
                 </span>
               </div>
             </div>
-            
+
             {/* 소셜 로그인 버튼 */}
             <motion.div variants={itemVariants} className="space-y-4">
               {/* Google 로그인 */}
               <motion.button
                 onClick={handleGoogleLogin}
-                whileHover={{ 
-                  scale: 1.02, 
+                whileHover={{
+                  scale: 1.02,
                   y: -4,
                 }}
                 whileTap={{ scale: 0.98 }}
@@ -608,25 +628,25 @@ export default function AuthPage() {
                 </svg>
                 <span className="tracking-wide">Google로 시작하기</span>
               </motion.button>
-              
+
               {/* Kakao 로그인 */}
               <motion.button
                 onClick={handleKakaoLogin}
-                whileHover={{ 
-                  scale: 1.02, 
+                whileHover={{
+                  scale: 1.02,
                   y: -4,
                 }}
                 whileTap={{ scale: 0.98 }}
                 className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-[#FEE500] hover:bg-[#FDD835] text-[#3C1E1E] font-bold rounded-2xl transition-all shadow-lg hover:shadow-[0_20px_40px_rgba(254,229,0,0.3)]"
               >
                 <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3zm5.907 8.06l1.47-1.424a.472.472 0 0 0-.656-.678l-1.928 1.866V9.282a.472.472 0 0 0-.944 0v2.557a.471.471 0 0 0 0 .222V13.5a.472.472 0 0 0 .944 0v-1.363l.427-.413 1.428 2.033a.472.472 0 1 0 .773-.543l-1.514-2.155zm-2.958 1.924h-1.46V9.297a.472.472 0 0 0-.943 0v4.159c0 .26.21.472.471.472h1.932a.472.472 0 1 0 0-.944zm-5.857-1.092l.696-1.707.638 1.707H9.092zm2.523.488l.002-.016a.469.469 0 0 0-.127-.32l-1.046-2.8a.69.69 0 0 0-.627-.474.696.696 0 0 0-.653.447l-1.661 4.075a.472.472 0 0 0 .874.357l.33-.813h2.07l.299.8a.472.472 0 1 0 .884-.33l-.345-.926zM8.293 9.302a.472.472 0 0 0-.471-.472H4.577a.472.472 0 1 0 0 .944h1.16v3.736a.472.472 0 0 0 .944 0V9.774h1.14c.261 0 .472-.212.472-.472z"/>
+                  <path d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3zm5.907 8.06l1.47-1.424a.472.472 0 0 0-.656-.678l-1.928 1.866V9.282a.472.472 0 0 0-.944 0v2.557a.471.471 0 0 0 0 .222V13.5a.472.472 0 0 0 .944 0v-1.363l.427-.413 1.428 2.033a.472.472 0 1 0 .773-.543l-1.514-2.155zm-2.958 1.924h-1.46V9.297a.472.472 0 0 0-.943 0v4.159c0 .26.21.472.471.472h1.932a.472.472 0 1 0 0-.944zm-5.857-1.092l.696-1.707.638 1.707H9.092zm2.523.488l.002-.016a.469.469 0 0 0-.127-.32l-1.046-2.8a.69.69 0 0 0-.627-.474.696.696 0 0 0-.653.447l-1.661 4.075a.472.472 0 0 0 .874.357l.33-.813h2.07l.299.8a.472.472 0 1 0 .884-.33l-.345-.926zM8.293 9.302a.472.472 0 0 0-.471-.472H4.577a.472.472 0 1 0 0 .944h1.16v3.736a.472.472 0 0 0 .944 0V9.774h1.14c.261 0 .472-.212.472-.472z" />
                 </svg>
                 <span className="tracking-wide">카카오로 시작하기</span>
               </motion.button>
             </motion.div>
           </motion.div>
-          
+
           {/* 푸터 텍스트 */}
           <motion.div
             variants={itemVariants}

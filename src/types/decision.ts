@@ -9,3 +9,6 @@ export interface DecisionOption {
   probability: number;   // 계산된 확률 (0-1 사이)
 }
 
+
+
+
