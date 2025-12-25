@@ -8,20 +8,10 @@ export async function middleware(request: NextRequest) {
         },
     });
 
-    // Check if Supabase env vars are available
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-        console.warn('Middleware: Supabase 환경 변수가 설정되지 않았습니다. 인증 체크를 건너뜁니다.');
-        // Allow request to proceed without authentication check
-        return response;
-    }
-
     try {
         const supabase = createServerClient(
-            supabaseUrl,
-            supabaseAnonKey,
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
             {
                 cookies: {
                     getAll() {
