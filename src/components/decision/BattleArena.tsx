@@ -83,7 +83,11 @@ export default function BattleArena({ winner, competitors, onClose }: BattleAren
 
     if (!winner) return null;
 
-    const winnerCharacterId = (winner.characterId as 1 | 2 | 3 | 4) || 1;
+    // CRITICAL: Do not use || 1 fallback! This causes all winners to show as character 1 (wizard)
+    if (!winner.characterId) {
+        console.error('Winner has no characterId:', winner);
+    }
+    const winnerCharacterId = (winner.characterId as 1 | 2 | 3 | 4) ?? 1;
     const winnerCharacter = getCharacter(winnerCharacterId);
 
     return (

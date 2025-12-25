@@ -35,25 +35,39 @@ export default function CharacterSprite({ option, position, state, delay = 0, in
             };
         }
         if (state === 'attacking') {
-            // Calculate unique bounce direction based on option ID (pseudo-random but deterministic)
-            const idNum = parseInt(option.id) || 1;
-            const seed = idNum * 17;
+            // 4-directional bounce based on character ID
+            // Character 1: Top-left (-100, -100)
+            // Character 2: Top-right (100, -100)
+            // Character 3: Bottom-left (-100, 100)
+            // Character 4: Bottom-right (100, 100)
 
-            // X-axis: Bounce AWAY from center (negative for left, positive for right)
-            // Magnitude: 120 ~ 180px
-            const bounceXMag = 120 + (seed % 60);
-            const bounceX = position === 'left' ? -bounceXMag : bounceXMag;
+            let bounceX = 0;
+            let bounceY = 0;
 
-            // Y-axis: Scatter up or down (-80 ~ 80px)
-            // Use bitwise or modulo to decide up/down based on ID
-            const yDir = seed % 2 === 0 ? 1 : -1;
-            const bounceY = (40 + (seed % 40)) * yDir;
+            switch (characterId) {
+                case 1:
+                    bounceX = -150;
+                    bounceY = -150;
+                    break;
+                case 2:
+                    bounceX = 150;
+                    bounceY = -150;
+                    break;
+                case 3:
+                    bounceX = -150;
+                    bounceY = 150;
+                    break;
+                case 4:
+                    bounceX = 150;
+                    bounceY = 150;
+                    break;
+            }
 
             return {
-                x: [0, bounceX], // Start at center (0), bounce out
-                y: [0, bounceY], // Start at center (0), bounce up/down
-                scale: [1, 0.9], // Squash on impact (at 0), normal at peak
-                rotate: [0, position === 'left' ? -15 : 15],
+                x: [0, bounceX, 0], // Bounce out and return to center
+                y: [0, bounceY, 0], // Bounce out and return to center
+                scale: [1, 0.9, 1], // Squash on impact, return to normal
+                rotate: [0, characterId % 2 === 0 ? 15 : -15, 0], // Rotate and return
             };
         }
         if (state === 'hit') {
@@ -94,14 +108,13 @@ export default function CharacterSprite({ option, position, state, delay = 0, in
             }}
             transition={{
                 // Entrance (x-axis move) should be slow and linear
-                // Elastic Overhaul:
-                // Attacking: Fast ping-pong with large amplitude
-                duration: state === 'attacking' ? 0.4 : state === 'idle' ? 2.5 : state === 'defeated' ? 0.8 : 1, // Slower than 0.2s to see the bounce
+                // Attacking: Smooth bounce out and back
+                duration: state === 'attacking' ? 1.2 : state === 'idle' ? 2.5 : state === 'defeated' ? 0.8 : 1,
                 type: 'tween',
                 ease: state === 'idle' ? 'linear' : state === 'attacking' ? 'easeInOut' : 'easeInOut',
                 repeat: state === 'idle' || state === 'attacking' ? Infinity : 0,
-                repeatType: state === 'attacking' ? 'reverse' : 'loop',
-                delay: state === 'attacking' ? (option.id ? (parseInt(option.id) % 2) * 0.1 : 0) : delay, // Stagger based on ID/index approximation
+                repeatType: state === 'attacking' ? 'loop' : 'loop', // Changed from 'reverse' to 'loop' for smooth return
+                delay: state === 'attacking' ? (characterId - 1) * 0.15 : delay, // Stagger based on character ID
             }}
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
             style={{
