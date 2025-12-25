@@ -6,7 +6,7 @@ import { DecisionOption } from '@/types/decision';
 import { calculateProbabilities, pickWinner } from '@/lib/calculations';
 import WeightSlider from '@/components/decision/WeightSlider';
 import ProbabilityChart from '@/components/decision/ProbabilityChart';
-import ResultOverlay from '@/components/decision/ResultOverlay';
+import BattleArena from '@/components/decision/BattleArena';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
@@ -81,13 +81,29 @@ export default function DashboardPage() {
 
     // 확률 기준으로 상위 2개 옵션 선택 (경쟁자)
     const sortedOptions = [...optionsWithProbability].sort((a, b) => b.probability - a.probability);
-    setCompetitors(sortedOptions);
+
+    // 원본 옵션 리스트의 인덱스에 따라 캐릭터 ID 할당 (자동 매핑)
+    const competitorsWithChars = sortedOptions.map(opt => {
+      const originalIndex = options.findIndex(o => o.id === opt.id);
+      // 0->1, 1->2, 2->3, 3->4, 4->1, ... 순환
+      const charId = (originalIndex % 4) + 1;
+      return { ...opt, characterId: charId };
+    });
+
+    setCompetitors(competitorsWithChars);
 
     // 애니메이션을 위한 딜레이
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     const selectedWinner = pickWinner(optionsWithProbability);
-    setWinner(selectedWinner);
+
+    // 승자에게도 캐릭터 ID 할당
+    if (selectedWinner) {
+      const originalIndex = options.findIndex(o => o.id === selectedWinner.id);
+      const charId = (originalIndex % 4) + 1;
+      setWinner({ ...selectedWinner, characterId: charId });
+    }
+
     setIsDeciding(false);
   };
 
@@ -203,8 +219,8 @@ export default function DashboardPage() {
         </motion.div>
       </div>
 
-      {/* 결과 오버레이 */}
-      <ResultOverlay
+      {/* 결과 오버레이 (배틀 아레나) */}
+      <BattleArena
         winner={winner}
         competitors={competitors}
         onClose={() => {

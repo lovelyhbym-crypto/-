@@ -15,7 +15,8 @@ interface CharacterSpriteProps {
  * Animated character sprite for battle sequences
  */
 export default function CharacterSprite({ option, position, state, delay = 0 }: CharacterSpriteProps) {
-    const character = getCharacter(option.characterId);
+    const characterId = (option.characterId as 1 | 2 | 3 | 4) || 1;
+    const character = getCharacter(characterId);
 
     // Position variants
     const getInitialPosition = () => {
@@ -74,25 +75,28 @@ export default function CharacterSprite({ option, position, state, delay = 0 }: 
             transition={{
                 delay,
                 duration: state === 'attacking' ? 0.6 : state === 'defeated' ? 0.8 : 1,
-                type: 'spring',
-                stiffness: 100,
+                type: 'tween',
+                ease: 'easeInOut',
                 repeat: state === 'idle' || state === 'attacking' ? Infinity : 0,
                 repeatType: 'loop',
             }}
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
             style={{
                 filter: `drop-shadow(0 0 30px ${character.glowColor})`,
+                zIndex: state === 'defeated' ? 0 : 10,
             }}
         >
             <div className="flex flex-col items-center gap-2">
-                {/* Character Emoji */}
-                <div
-                    className="text-8xl"
-                    style={{
-                        textShadow: `0 0 40px ${character.glowColor}, 0 0 80px ${character.glowColor}`,
-                    }}
-                >
-                    {character.emoji}
+                {/* Character Image */}
+                <div className="relative w-32 h-32 md:w-48 md:h-48 mb-4">
+                    <img
+                        src={character.image}
+                        alt={character.name}
+                        className="w-full h-full object-contain"
+                        style={{
+                            filter: `drop-shadow(0 0 20px ${character.glowColor})`,
+                        }}
+                    />
                 </div>
 
                 {/* Character Name */}
@@ -104,10 +108,9 @@ export default function CharacterSprite({ option, position, state, delay = 0 }: 
                         duration: 1.5,
                         repeat: Infinity,
                     }}
-                    className="text-xl font-bold px-4 py-1 rounded-full"
+                    className="text-xl font-bold px-4 py-1 rounded-full bg-black/50 backdrop-blur-sm whitespace-nowrap"
                     style={{
                         color: character.color,
-                        backgroundColor: `${character.color}20`,
                         border: `2px solid ${character.color}`,
                         boxShadow: `0 0 20px ${character.glowColor}`,
                     }}

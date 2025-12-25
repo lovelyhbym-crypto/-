@@ -7,6 +7,7 @@ export interface DecisionOption {
   label: string;        // 옵션 이름
   weight: number;       // 가중치 (0 이상의 숫자)
   probability: number;   // 계산된 확률 (0-1 사이)
+  characterId?: number; // 할당된 캐릭터 ID (1-4)
 }
 
 

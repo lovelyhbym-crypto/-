@@ -82,7 +82,8 @@ export default function BattleArena({ winner, competitors, onClose }: BattleAren
 
     if (!winner) return null;
 
-    const winnerCharacter = getCharacter(winner.characterId);
+    const winnerCharacterId = (winner.characterId as 1 | 2 | 3 | 4) || 1;
+    const winnerCharacter = getCharacter(winnerCharacterId);
 
     return (
         <AnimatePresence>
@@ -174,9 +175,13 @@ export default function BattleArena({ winner, competitors, onClose }: BattleAren
                                         }}
                                         transition={{
                                             duration: 0.5,
+                                            type: "tween",
+                                            ease: "easeOut",
                                             scale: {
                                                 repeat: Infinity,
                                                 duration: 1,
+                                                type: "tween",
+                                                ease: "easeInOut"
                                             },
                                         }}
                                         className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-8xl font-black text-white z-10"
@@ -208,6 +213,8 @@ export default function BattleArena({ winner, competitors, onClose }: BattleAren
                                     transition={{
                                         duration: 2,
                                         repeat: Infinity,
+                                        ease: "easeInOut",
+                                        type: "tween"
                                     }}
                                     className="absolute inset-0 bg-gradient-radial from-yellow-500/20 via-transparent to-transparent"
                                 />
@@ -254,6 +261,8 @@ export default function BattleArena({ winner, competitors, onClose }: BattleAren
                                         transition={{
                                             duration: 1.5,
                                             repeat: Infinity,
+                                            type: "tween",
+                                            ease: "easeInOut"
                                         }}
                                         className="text-5xl font-black text-white mb-4"
                                         style={{
