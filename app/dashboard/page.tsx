@@ -7,12 +7,15 @@ import { calculateProbabilities, pickWinner } from '@/lib/calculations';
 import WeightSlider from '@/components/decision/WeightSlider';
 import ProbabilityChart from '@/components/decision/ProbabilityChart';
 import ResultOverlay from '@/components/decision/ResultOverlay';
+import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
 
 /**
  * 영만이의 뽑기 도사 - 메인 대시보드
  * 가중치 기반 결정 도구
  */
 export default function DashboardPage() {
+  const router = useRouter();
   const [options, setOptions] = useState<DecisionOption[]>([
     { id: '1', label: '새 옵션', weight: 50, probability: 0 },
     { id: '2', label: '새 옵션', weight: 50, probability: 0 },
@@ -20,12 +23,12 @@ export default function DashboardPage() {
   const [winner, setWinner] = useState<DecisionOption | null>(null);
   const [competitors, setCompetitors] = useState<DecisionOption[]>([]);
   const [isDeciding, setIsDeciding] = useState(false);
-  
+
   // 확률 계산 (옵션이 변경될 때마다 자동 계산)
   const optionsWithProbability = useMemo(() => {
     return calculateProbabilities(options);
   }, [options]);
-  
+
   // 옵션 추가 함수
   const handleAddOption = () => {
     const newId = String(Date.now());
@@ -37,7 +40,7 @@ export default function DashboardPage() {
     };
     setOptions([...options, newOption]);
   };
-  
+
   // 옵션 삭제 함수
   const handleDeleteOption = (id: string) => {
     if (options.length <= 1) {
@@ -46,42 +49,48 @@ export default function DashboardPage() {
     }
     setOptions(options.filter(opt => opt.id !== id));
   };
-  
+
   // 가중치 변경 함수
   const handleWeightChange = (id: string, weight: number) => {
-    setOptions(options.map(opt => 
+    setOptions(options.map(opt =>
       opt.id === id ? { ...opt, weight } : opt
     ));
   };
-  
+
   // 옵션 이름 변경 함수
   const handleLabelChange = (id: string, label: string) => {
-    setOptions(options.map(opt => 
+    setOptions(options.map(opt =>
       opt.id === id ? { ...opt, label } : opt
     ));
   };
-  
+
+  // 로그아웃 함수
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
+
   // 결정하기 함수
   const handleDecide = async () => {
     if (options.length === 0) {
       alert('옵션을 추가해주세요.');
       return;
     }
-    
+
     setIsDeciding(true);
-    
+
     // 확률 기준으로 상위 2개 옵션 선택 (경쟁자)
     const sortedOptions = [...optionsWithProbability].sort((a, b) => b.probability - a.probability);
     setCompetitors(sortedOptions);
-    
+
     // 애니메이션을 위한 딜레이
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     const selectedWinner = pickWinner(optionsWithProbability);
     setWinner(selectedWinner);
     setIsDeciding(false);
   };
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-950 dark:to-zinc-900 py-12 px-4">
       <div className="max-w-4xl mx-auto">
@@ -91,14 +100,25 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
-            영만이의 뽑기 도사
-          </h1>
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex-1"></div>
+            <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-zinc-100 flex-1">
+              영만이의 뽑기 도사
+            </h1>
+            <div className="flex-1 flex justify-end">
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+              >
+                로그아웃
+              </button>
+            </div>
+          </div>
           <p className="text-zinc-600 dark:text-zinc-400 text-lg">
             가중치를 설정하고 운명을 결정하세요
           </p>
         </motion.div>
-        
+
         {/* 메인 컨텐츠 */}
         <div className="grid md:grid-cols-2 gap-8 mb-8">
           {/* 왼쪽: 옵션 설정 */}
@@ -120,7 +140,7 @@ export default function DashboardPage() {
                   + 추가
                 </button>
               </div>
-              
+
               <div className="space-y-3">
                 <AnimatePresence mode="popLayout">
                   {options.map((option) => (
@@ -136,7 +156,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </motion.div>
-          
+
           {/* 오른쪽: 확률 차트 */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -152,7 +172,7 @@ export default function DashboardPage() {
             </div>
           </motion.div>
         </div>
-        
+
         {/* 결정하기 버튼 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -182,15 +202,15 @@ export default function DashboardPage() {
           </button>
         </motion.div>
       </div>
-      
+
       {/* 결과 오버레이 */}
-      <ResultOverlay 
-        winner={winner} 
+      <ResultOverlay
+        winner={winner}
         competitors={competitors}
         onClose={() => {
           setWinner(null);
           setCompetitors([]);
-        }} 
+        }}
       />
     </div>
   );
