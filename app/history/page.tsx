@@ -55,18 +55,18 @@ export default function HistoryPage() {
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex justify-between items-center mb-12"
+                    className="flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0 mb-12"
                 >
                     <button
                         onClick={() => router.push('/dashboard')}
-                        className="px-4 py-2 bg-zinc-200 dark:bg-zinc-800 rounded-lg text-sm font-medium hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
+                        className="px-6 py-2 bg-zinc-200 dark:bg-zinc-800 rounded-lg text-sm font-medium hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors whitespace-nowrap mb-6 md:mb-0"
                     >
                         ← 돌아가기
                     </button>
-                    <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+                    <h1 className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
                         나의 결정 기록
                     </h1>
-                    <div className="w-[100px]"></div> {/* Spacer for centering */}
+                    <div className="w-[100px] hidden md:block"></div> {/* Spacer for centering on desktop */}
                 </motion.div>
 
                 {loading ? (
