@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { DecisionOption } from '@/types/decision';
 import CharacterSprite from './CharacterSprite';
+import DustCloud from './DustCloud';
 import { getCharacter } from '@/lib/characters';
 
 interface BattleArenaProps {
@@ -152,6 +153,11 @@ export default function BattleArena({ winner, competitors, onClose }: BattleAren
                                     ease: "easeInOut"
                                 }}
                             >
+                                {/* Impact Effects (Dust Cloud) - Only during Clash */}
+                                {stage === 'clash' && (
+                                    <DustCloud />
+                                )}
+
                                 {competitors.map((option, index) => {
                                     const isWinner = option.id === winner.id;
                                     const position = index % 2 === 0 ? 'left' : 'right';
@@ -170,6 +176,7 @@ export default function BattleArena({ winner, competitors, onClose }: BattleAren
                                         <CharacterSprite
                                             key={option.id}
                                             option={option}
+                                            index={index}
                                             position={position}
                                             state={characterState}
                                             delay={index * 0.2}

@@ -9,12 +9,13 @@ interface CharacterSpriteProps {
     position: 'left' | 'right' | 'center';
     state: 'idle' | 'attacking' | 'hit' | 'defeated' | 'victorious';
     delay?: number;
+    index: number;
 }
 
 /**
  * Animated character sprite for battle sequences
  */
-export default function CharacterSprite({ option, position, state, delay = 0 }: CharacterSpriteProps) {
+export default function CharacterSprite({ option, position, state, delay = 0, index }: CharacterSpriteProps) {
     const characterId = (option.characterId as 1 | 2 | 3 | 4) || 1;
     const character = getCharacter(characterId);
 
