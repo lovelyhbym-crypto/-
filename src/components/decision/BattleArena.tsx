@@ -27,8 +27,8 @@ export default function BattleArena({ winner, competitors, onClose }: BattleAren
         // Animation sequence timeline
         const timeline = [
             { stage: 'intro' as BattleStage, duration: 500 },
-            { stage: 'entrance' as BattleStage, duration: 1000 },
-            { stage: 'clash' as BattleStage, duration: 2500 },
+            { stage: 'entrance' as BattleStage, duration: 2500 },
+            { stage: 'clash' as BattleStage, duration: 3500 },
             { stage: 'elimination' as BattleStage, duration: 1000 },
             { stage: 'victory' as BattleStage, duration: 0 },
         ];
@@ -139,7 +139,19 @@ export default function BattleArena({ winner, competitors, onClose }: BattleAren
 
                         {/* Entrance & Clash & Elimination Stages */}
                         {(stage === 'entrance' || stage === 'clash' || stage === 'elimination') && (
-                            <div className="relative w-full max-w-6xl h-96">
+                            <motion.div
+                                className="relative w-full max-w-6xl h-96"
+                                animate={stage === 'clash' ? {
+                                    x: [-3, 3, -2, 2, 0], // Sharp jitter
+                                    y: [-3, 3, -1, 1, 0],
+                                } : {}}
+                                transition={{
+                                    duration: 0.1, // Ultra-fast shake
+                                    repeat: stage === 'clash' ? Infinity : 0,
+                                    repeatType: "reverse",
+                                    ease: "easeInOut"
+                                }}
+                            >
                                 {competitors.map((option, index) => {
                                     const isWinner = option.id === winner.id;
                                     const position = index % 2 === 0 ? 'left' : 'right';
@@ -192,7 +204,7 @@ export default function BattleArena({ winner, competitors, onClose }: BattleAren
                                         VS
                                     </motion.div>
                                 )}
-                            </div>
+                            </motion.div>
                         )}
 
                         {/* Victory Stage */}
