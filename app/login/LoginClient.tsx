@@ -287,7 +287,7 @@ export default function LoginClient() {
 
       {/* 메인 컨텐츠 */}
       <motion.div
-        className="relative z-10 flex min-h-screen items-center justify-center p-4"
+        className="relative z-10 flex min-h-screen items-center justify-center px-2 py-4 md:p-4"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -312,7 +312,7 @@ export default function LoginClient() {
             </motion.div>
 
             {/* 세리프 스타일 타이틀 */}
-            <h1 className="text-5xl md:text-6xl font-black mb-4 tracking-wider" style={{ fontFamily: 'Georgia, serif' }}>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-4 tracking-wider w-full max-w-full" style={{ fontFamily: 'Georgia, serif' }}>
               <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-200 drop-shadow-[0_0_20px_rgba(250,204,21,0.5)]">
                 영만이의
               </span>
