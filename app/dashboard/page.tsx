@@ -142,22 +142,21 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex-1"></div>
-            <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-zinc-100 flex-1">
-              영만이의 뽑기 도사
+          <div className="flex justify-between items-start gap-3">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-zinc-900 dark:text-zinc-100 flex-1 max-w-[75%] sm:max-w-none leading-tight">
+              영만이의<br className="sm:hidden" /> 뽑기 도사
             </h1>
-            <div className="flex-1 flex justify-end gap-3">
+            <div className="flex flex-col gap-2 items-end">
               <button
                 onClick={() => router.push('/history')}
-                className="px-4 py-2 bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-lg text-sm font-medium hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
+                className="px-3 py-1.5 bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-lg text-xs font-medium hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors whitespace-nowrap"
                 title="나의 결정 기록"
               >
                 📜 기록
               </button>
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700 transition-colors whitespace-nowrap"
               >
                 로그아웃
               </button>
