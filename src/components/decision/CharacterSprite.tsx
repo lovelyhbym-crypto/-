@@ -85,7 +85,9 @@ export default function CharacterSprite({ option, position, state, delay = 0, in
             initial={{ opacity: 0, ...getInitialPosition() }}
             animate={{
                 opacity: state === 'defeated' ? 0 : 1,
-                x: 0,
+                // Remove hardcoded x: 0 to allow bounce animation
+                // x will come from getStateAnimation() when needed
+                ...(state !== 'attacking' && state !== 'hit' && { x: 0 }), // Only reset x for non-collision states
                 scale: 1,
                 rotate: 0,
                 ...getStateAnimation(),
