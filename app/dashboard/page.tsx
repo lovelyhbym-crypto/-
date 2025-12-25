@@ -70,6 +70,27 @@ export default function DashboardPage() {
     router.push('/login');
   };
 
+  // 결정 저장 함수
+  const saveDecision = async (winnerOption: DecisionOption, allOptions: DecisionOption[], characterId: number) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase.from('decisions').insert({
+        user_id: user.id,
+        winner_name: winnerOption.label,
+        winner_character: characterId,
+        options: allOptions,
+      });
+
+      if (error) {
+        console.error('Failed to save decision:', error);
+      }
+    } catch (err) {
+      console.error('Error saving decision:', err);
+    }
+  };
+
   // 결정하기 함수
   const handleDecide = async () => {
     if (options.length === 0) {
@@ -102,6 +123,9 @@ export default function DashboardPage() {
       const originalIndex = options.findIndex(o => o.id === selectedWinner.id);
       const charId = (originalIndex % 4) + 1;
       setWinner({ ...selectedWinner, characterId: charId });
+
+      // DB에 저장 (비동기)
+      saveDecision(selectedWinner, competitorsWithChars, charId);
     }
 
     setIsDeciding(false);
@@ -121,7 +145,14 @@ export default function DashboardPage() {
             <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-zinc-100 flex-1">
               영만이의 뽑기 도사
             </h1>
-            <div className="flex-1 flex justify-end">
+            <div className="flex-1 flex justify-end gap-3">
+              <button
+                onClick={() => router.push('/history')}
+                className="px-4 py-2 bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-lg text-sm font-medium hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
+                title="나의 결정 기록"
+              >
+                📜 기록
+              </button>
               <button
                 onClick={handleLogout}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
